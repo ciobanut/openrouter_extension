@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenRouter Status</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading account data...</p>
+    </div>
+    <div id="error" class="error" style="display:none">
+      <div class="error-icon">⚠️</div>
+      <p id="error-message">Not logged in to OpenRouter</p>
+      <button id="retry-btn" class="btn" onclick="loadData()">Retry</button>
+    </div>
+    <div id="content" style="display:none">
+      <!-- Header -->
+      <div class="header">
+        <img id="avatar" class="avatar" src="" alt="avatar">
+        <div class="header-info">
+          <h1 id="user-name" class="user-name">-</h1>
+          <p id="user-email" class="user-email">-</p>
+        </div>
+      </div>
+
+      <!-- Balance Card -->
+      <div class="card balance-card">
+        <div class="card-label">Balance</div>
+        <div class="card-value" id="balance">-</div>
+      </div>
+
+      <!-- Usage Cards -->
+      <div class="cards-row">
+        <div class="card mini-card">
+          <div class="card-label">Today</div>
+          <div class="card-value mini" id="usage-daily">-</div>
+        </div>
+        <div class="card mini-card">
+          <div class="card-label">This Week</div>
+          <div class="card-value mini" id="usage-weekly">-</div>
+        </div>
+        <div class="card mini-card">
+          <div class="card-label">This Month</div>
+          <div class="card-value mini" id="usage-monthly">-</div>
+        </div>
+      </div>
+
+      <!-- API Keys -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">API Keys</span>
+          <span class="badge" id="keys-count">0</span>
+        </div>
+        <div id="keys-list" class="keys-list"></div>
+      </div>
+
+      <!-- Workspace Info -->
+      <div class="card workspace-card">
+        <div class="card-label">Workspace</div>
+        <div class="card-value workspace" id="workspace-name">-</div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <a href="https://openrouter.ai/settings/credits" target="_blank" class="link">View Credits →</a>
+        <a href="https://openrouter.ai/settings/keys" target="_blank" class="link">Manage Keys →</a>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
