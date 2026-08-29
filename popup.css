@@ -163,6 +163,22 @@ body {
   text-align: center;
 }
 
+.period-card {
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  border-color: #2a2a2e;
+}
+
+.period-card:hover {
+  border-color: #555;
+  background: #1d1d21;
+}
+
+.period-card.active {
+  border-color: #c8ff00;
+  background: #1a1a0e;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;

@@ -35,24 +35,40 @@
 
       <!-- Usage Cards -->
       <div class="cards-row">
-        <div class="card mini-card">
+        <div class="card mini-card period-card" data-period="day">
           <div class="card-label">Today</div>
           <div class="card-value mini" id="usage-daily">-</div>
         </div>
-        <div class="card mini-card">
+        <div class="card mini-card period-card" data-period="week">
           <div class="card-label">This Week</div>
           <div class="card-value mini" id="usage-weekly">-</div>
         </div>
-        <div class="card mini-card">
+        <div class="card mini-card period-card" data-period="month">
           <div class="card-label">This Month</div>
           <div class="card-value mini" id="usage-monthly">-</div>
         </div>
       </div>
 
-      <!-- Usage by Model (last hour) -->
+      <!-- Quick Period Cards -->
+      <div class="cards-row">
+        <div class="card mini-card period-card active" data-period="15m">
+          <div class="card-label">15 min</div>
+          <div class="card-value mini" id="usage-15m">-</div>
+        </div>
+        <div class="card mini-card period-card" data-period="1h">
+          <div class="card-label">1 hour</div>
+          <div class="card-value mini" id="usage-1h">-</div>
+        </div>
+        <div class="card mini-card period-card" data-period="3h">
+          <div class="card-label">3 hours</div>
+          <div class="card-value mini" id="usage-3h">-</div>
+        </div>
+      </div>
+
+      <!-- Usage by Model -->
       <div class="card">
         <div class="card-header">
-          <span class="card-label">Usage by Model (1h)</span>
+          <span class="card-label" id="chart-title">Usage by Model (15 min)</span>
           <span class="badge" id="model-usage-count">0</span>
         </div>
         <div id="model-chart-wrap" class="chart-wrap" style="display:none">

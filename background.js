@@ -118,14 +118,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
-  if (msg.type === 'get-hourly-model-usage') {
+  if (msg.type === 'get-model-usage') {
+    const minutes = msg.minutes || 60;
+    const granularity = msg.granularity || 'minute';
     const now = new Date();
-    const start = new Date(Date.now() - 3600000);
+    const start = new Date(Date.now() - minutes * 60000);
 
     const payload = {
       metrics: ['total_usage', 'request_count'],
       dimensions: ['model'],
-      granularity: 'minute',
+      granularity,
       time_range: { start: start.toISOString(), end: now.toISOString() },
       order_by: { field: 'date', direction: 'desc' },
       limit: 200
