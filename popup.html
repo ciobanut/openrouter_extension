@@ -49,6 +49,18 @@
         </div>
       </div>
 
+      <!-- Usage by Model (last hour) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Usage by Model (1h)</span>
+          <span class="badge" id="model-usage-count">0</span>
+        </div>
+        <div id="model-chart-wrap" class="chart-wrap" style="display:none">
+          <img id="model-chart" class="chart-img" alt="Usage by model chart">
+        </div>
+        <div id="model-usage-list" class="keys-list"></div>
+      </div>
+
       <!-- API Keys -->
       <div class="card">
         <div class="card-header">
@@ -58,15 +70,9 @@
         <div id="keys-list" class="keys-list"></div>
       </div>
 
-      <!-- Workspace Info -->
-      <div class="card workspace-card">
-        <div class="card-label">Workspace</div>
-        <div class="card-value workspace" id="workspace-name">-</div>
-      </div>
-
       <!-- Footer -->
       <div class="footer">
-        <a href="https://openrouter.ai/settings/credits" target="_blank" class="link">View Credits →</a>
+        <a href="https://openrouter.ai/activity" target="_blank" class="link">View Activity →</a>
         <a href="https://openrouter.ai/settings/keys" target="_blank" class="link">Manage Keys →</a>
       </div>
     </div>

@@ -241,6 +241,35 @@ body {
   opacity: 0.7;
 }
 
+/* Model Usage Chart */
+.chart-wrap {
+  margin-bottom: 8px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #161618;
+}
+
+.chart-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+
+/* Model Usage */
+.model-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.model-time {
+  font-size: 10px;
+  color: #666;
+}
+
 /* Scrollbar */
 .keys-list::-webkit-scrollbar {
   width: 4px;

@@ -117,4 +117,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .catch(e => sendResponse({ error: e.message }));
     return true;
   }
+
+  if (msg.type === 'get-hourly-model-usage') {
+    const now = new Date();
+    const start = new Date(Date.now() - 3600000);
+
+    const payload = {
+      metrics: ['total_usage', 'request_count'],
+      dimensions: ['model'],
+      granularity: 'minute',
+      time_range: { start: start.toISOString(), end: now.toISOString() },
+      order_by: { field: 'date', direction: 'desc' },
+      limit: 200
+    };
+
+    fetchFrontend('/private/analytics-query', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+      .then(data => sendResponse(data?.data ?? data))
+      .catch(e => sendResponse({ error: e.message }));
+    return true;
+  }
 });

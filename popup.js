@@ -109,9 +109,6 @@ async function loadData() {
       $('#balance').textContent = 'N/A';
     }
 
-    // Populate workspace
-    $('#workspace-name').textContent = workspace?.name || 'Default Workspace';
-
     // Populate API keys
     const keys = keysData.keys || [];
     $('#keys-count').textContent = keys.length;
@@ -152,6 +149,149 @@ async function loadData() {
       more.className = 'key-item';
       more.innerHTML = `<span class="key-name" style="color:#666">+${sorted.length - 10} more keys...</span>`;
       keysList.appendChild(more);
+    }
+
+    // Fetch hourly model usage
+    try {
+      const usageResp = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({ type: 'get-hourly-model-usage' }, (resp) => {
+          if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+          else if (resp?.error) reject(new Error(resp.error));
+          else resolve(resp);
+        });
+      });
+
+      const usageData = usageResp.data || usageResp;
+      const usageEntries = Array.isArray(usageData) ? usageData : usageData?.rows || [];
+
+      // Aggregate by model: sum total_usage per model, keep latest date
+      const modelMap = new Map();
+      for (const entry of usageEntries) {
+        const model = entry.model || entry.dimensions?.model || 'unknown';
+        const cost = parseFloat(entry.total_usage || entry.metrics?.total_usage || 0);
+        const date = entry.date || entry.dimensions?.date || '';
+        const requests = parseInt(entry.request_count || entry.metrics?.request_count || 0, 10);
+
+        if (modelMap.has(model)) {
+          const existing = modelMap.get(model);
+          existing.total += cost;
+          existing.requests += requests;
+          if (date > existing.latestDate) existing.latestDate = date;
+        } else {
+          modelMap.set(model, { model, total: cost, requests, latestDate: date });
+        }
+      }
+
+      // Convert to array, sort by total descending for chart
+      const sortedUsage = [...modelMap.values()]
+        .sort((a, b) => b.total - a.total);
+
+      const modelList = $('#model-usage-list');
+      modelList.innerHTML = '';
+      $('#model-usage-count').textContent = sortedUsage.length;
+
+      if (sortedUsage.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'key-item';
+        empty.innerHTML = `<span class="key-name" style="color:#666">No usage in the last hour</span>`;
+        modelList.appendChild(empty);
+      } else {
+        // Build QuickChart bar chart
+        const labels = sortedUsage.map(e => {
+          const parts = e.model.split('/');
+          return parts[parts.length - 1];
+        });
+        const data = sortedUsage.map(e => parseFloat(e.total.toFixed(4)));
+        const dataLabels = sortedUsage.map(e => '$' + e.total.toFixed(4));
+        const maxVal = Math.max(...data, 0.01);
+        const chartHeight = Math.max(140, sortedUsage.length * 32 + 60);
+
+        const chartConfig = {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Cost ($)',
+              data,
+              backgroundColor: 'rgba(200, 255, 0, 0.7)',
+              borderColor: '#c8ff00',
+              borderWidth: 1,
+              borderRadius: 4
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: false,
+            maintainAspectRatio: false,
+            legend: { display: false },
+            scales: {
+              xAxes: [{
+                ticks: {
+                  beginAtZero: true,
+                  max: maxVal * 1.3,
+                  fontColor: '#888',
+                  fontSize: 9
+                },
+                gridLines: { color: 'rgba(255,255,255,0.06)' }
+              }],
+              yAxes: [{
+                ticks: {
+                  fontColor: '#ccc',
+                  fontSize: 10
+                },
+                gridLines: { display: false }
+              }]
+            },
+            plugins: {
+              datalabels: {
+                display: true,
+                anchor: 'end',
+                align: 'right',
+                backgroundColor: '#c8ff00',
+                color: '#0a0a0b',
+                // padding: [2, 8],
+                borderRadius: 10,
+                font: { size: 11, weight: '700' },
+                formatter: "function(v, ctx) { return '$' + Number(v).toFixed(4); }"
+              }
+            }
+          }
+        };
+
+        const chartUrl = 'https://quickchart.io/chart?w=320&h=' + chartHeight +
+          '&bg=%23161618&c=' + encodeURIComponent(JSON.stringify(chartConfig));
+
+        const chartWrap = $('#model-chart-wrap');
+        const chartImg = $('#model-chart');
+        chartImg.src = chartUrl;
+        show(chartWrap);
+
+        // Also show the list below the chart
+        for (const entry of sortedUsage) {
+          const div = document.createElement('div');
+          div.className = 'key-item';
+          const timeStr = entry.latestDate
+            ? new Date(entry.latestDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : '';
+          const displayName = entry.model.split('/').pop() || entry.model;
+          div.innerHTML = `
+            <div class="model-info">
+              <span class="key-name">${escapeHtml(displayName)}</span>
+              <span class="model-time">${timeStr}</span>
+            </div>
+            <span class="key-usage ${entry.total > 0 ? 'highlight' : ''}">${formatCurrency(entry.total)}</span>
+          `;
+          modelList.appendChild(div);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load model usage:', e);
+      const modelList = $('#model-usage-list');
+      modelList.innerHTML = '';
+      const errDiv = document.createElement('div');
+      errDiv.className = 'key-item';
+      errDiv.innerHTML = `<span class="key-name" style="color:#666">Could not load usage data</span>`;
+      modelList.appendChild(errDiv);
     }
 
   } catch (err) {
