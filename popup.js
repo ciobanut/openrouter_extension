@@ -40,45 +40,15 @@ function bgFetch(path) {
   });
 }
 
-function bgPost(path, body) {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage({ type: 'api-post', path, body }, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-      } else if (response?.error) {
-        reject(new Error(response.error));
-      } else {
-        resolve(response);
-      }
-    });
-  });
-}
-
 async function loadData() {
   show($('#loading'));
   hide($('#error'));
   hide($('#content'));
 
   try {
-    // Fetch user info and workspace in parallel
-    const [userResp, workspacesResp] = await Promise.all([
-      bgFetch('/private/users/current'),
-      bgFetch('/private/user/workspaces?scope=member')
-    ]);
-
-    // API responses wrap data: { data: { ... } }
+    // Fetch user info
+    const userResp = await bgFetch('/private/users/current');
     const userInfo = userResp.data || userResp;
-    const workspaces = workspacesResp.data || workspacesResp;
-
-    // Get active workspace - active_workspace_id is at the top level of the response
-    const workspaceId = workspacesResp.active_workspace_id || workspacesResp.default_workspace_id || workspaces[0]?.id;
-    const workspace = Array.isArray(workspaces) ? workspaces[0] : workspaces.data?.[0];
-
-    // Fetch API keys
-    const keysResp = await bgFetch(
-      `/private/workspace-api-keys?workspace_id=${workspaceId}&limit=50&offset=0`
-    );
-    const keysData = keysResp.data || keysResp;
 
     hide($('#loading'));
     show($('#content'));
@@ -107,48 +77,6 @@ async function loadData() {
       }
     } catch (e) {
       $('#balance').textContent = 'N/A';
-    }
-
-    // Populate API keys
-    const keys = keysData.keys || [];
-    $('#keys-count').textContent = keys.length;
-
-    const keysList = $('#keys-list');
-    keysList.innerHTML = '';
-
-    // Sort by total usage descending
-    const sorted = [...keys]
-      .filter(k => !k.deleted)
-      .sort((a, b) => (b.usage || 0) - (a.usage || 0));
-
-    // Calculate totals
-    let totalDaily = 0, totalWeekly = 0, totalMonthly = 0;
-    for (const k of keys) {
-      totalDaily += k.usage_daily || 0;
-      totalWeekly += k.usage_weekly || 0;
-      totalMonthly += k.usage_monthly || 0;
-    }
-
-    $('#usage-daily').textContent = formatCurrencyShort(totalDaily);
-    $('#usage-weekly').textContent = formatCurrencyShort(totalWeekly);
-    $('#usage-monthly').textContent = formatCurrencyShort(totalMonthly);
-
-    // Show top 10 keys
-    for (const key of sorted.slice(0, 10)) {
-      const div = document.createElement('div');
-      div.className = 'key-item';
-      div.innerHTML = `
-        <span class="key-name">${escapeHtml(key.name || key.label)}</span>
-        <span class="key-usage ${key.usage > 0 ? 'highlight' : ''}">${formatCurrencyShort(key.usage)}</span>
-      `;
-      keysList.appendChild(div);
-    }
-
-    if (sorted.length > 10) {
-      const more = document.createElement('div');
-      more.className = 'key-item';
-      more.innerHTML = `<span class="key-name" style="color:#666">+${sorted.length - 10} more keys...</span>`;
-      keysList.appendChild(more);
     }
 
     // Fetch model usage for all periods
