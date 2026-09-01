@@ -14,7 +14,7 @@ A Chrome extension that displays your OpenRouter account status directly in a po
 
 ## How It Works
 
-The extension uses the same internal APIs that [openrouter.ai](https://openrouter.ai) uses when you're logged in. It reads your session cookies to authenticate — **no API key or token needed**. Your credentials never leave your browser.
+The extension retrieves account information directly from [openrouter.ai](https://openrouter.ai) using your existing signed-in browser session — **no API key or token needed**. Account information is transmitted only between the extension and OpenRouter; nothing is sent to any server operated by the extension author.
 
 ### Data Sources
 
@@ -48,10 +48,9 @@ The extension uses the same internal APIs that [openrouter.ai](https://openroute
 
 | Permission | Purpose |
 |------------|---------|
-| `cookies` | Read your OpenRouter session cookie for authentication |
-| `host_permissions: openrouter.ai/*` | Make API calls to OpenRouter's frontend endpoints |
+| `host_permissions: openrouter.ai/*` | Retrieve account information from OpenRouter using your existing signed-in browser session |
 
-The extension only communicates with `openrouter.ai` and does not collect or transmit any data to third parties.
+The extension does not extract, store, or transmit authentication cookies to any server. It only communicates with `openrouter.ai` and does not collect or transmit any data to third parties.
 
 ## Tech Stack
 
@@ -66,7 +65,6 @@ The extension only communicates with `openrouter.ai` and does not collect or tra
 openrouter_extension/
 ├── manifest.json        # Extension manifest (MV3)
 ├── background.js        # Service worker — handles all API calls
-├── content.js           # Content script
 ├── popup.html           # Popup UI
 ├── popup.css            # Dark theme styling
 ├── popup.js             # Popup logic & data fetching
@@ -78,10 +76,11 @@ openrouter_extension/
 
 ## Privacy
 
-- ✅ No data is collected or sent to third parties
-- ✅ No API keys or tokens are stored
+- ✅ No data is collected, stored on external servers, or sent to third parties
+- ✅ No API keys, tokens, or authentication cookies are extracted or stored
 - ✅ Only communicates with `openrouter.ai`
 - ✅ Uses your existing browser session (no additional login required)
+- ✅ Account information is used only to display the account status in the extension popup
 - ✅ Open source — inspect the code yourself
 
 ## License

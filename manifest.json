@@ -1,11 +1,8 @@
 {
   "manifest_version": 3,
   "name": "OpenRouter Account Status",
-  "version": "1.0.0",
-  "description": "View your OpenRouter account status directly from the popup - no API key needed",
-  "permissions": [
-    "cookies"
-  ],
+  "version": "1.1.0",
+  "description": "View your OpenRouter balance, usage, API keys and workspace status directly from Chrome.",
   "host_permissions": [
     "https://openrouter.ai/*"
   ],

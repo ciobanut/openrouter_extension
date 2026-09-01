@@ -1,5 +1,5 @@
 // OpenRouter Account Status - Background Service Worker
-// Handles all API calls from the popup via cookies
+// Handles all API calls from the popup using the user's signed-in OpenRouter session
 
 const FRONTEND_API = 'https://openrouter.ai/api/frontend/v1';
 
