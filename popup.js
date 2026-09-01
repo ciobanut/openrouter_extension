@@ -32,7 +32,9 @@ function bgFetch(path) {
       if (chrome.runtime.lastError) {
         reject(new Error(chrome.runtime.lastError.message));
       } else if (response?.error) {
-        reject(new Error(response.error));
+        const err = new Error(response.error);
+        err.status = response.status;
+        reject(err);
       } else {
         resolve(response);
       }
@@ -40,9 +42,18 @@ function bgFetch(path) {
   });
 }
 
+// Detect that the user is not signed in to OpenRouter
+function isLoggedOut(err) {
+  if (err?.status === 401 || err?.status === 403) return true;
+  const msg = (err?.message || '').toLowerCase();
+  return msg.includes('auth cookie') || msg.includes('user or org id') ||
+    msg.includes('unauthorized') || msg.includes('401') || msg.includes('403');
+}
+
 async function loadData() {
   show($('#loading'));
   hide($('#error'));
+  hide($('#login'));
   hide($('#content'));
 
   try {
@@ -243,12 +254,11 @@ async function loadData() {
   } catch (err) {
     console.error('Failed to load OpenRouter data:', err);
     hide($('#loading'));
-    show($('#error'));
-    const msg = err.message || 'Unknown error';
-    if (msg.includes('401') || msg.includes('403')) {
-      $('#error-message').textContent = 'Not logged in to OpenRouter. Please log in first.';
+    if (isLoggedOut(err)) {
+      show($('#login'));
     } else {
-      $('#error-message').textContent = `Failed to load: ${msg}`;
+      show($('#error'));
+      $('#error-message').textContent = `Failed to load: ${err.message || 'Unknown error'}`;
     }
   }
 }

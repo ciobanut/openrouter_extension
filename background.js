@@ -33,7 +33,9 @@ async function fetchFrontend(path, opts = {}) {
     } catch (e) {
       // use default
     }
-    throw new Error(errMsg);
+    const err = new Error(errMsg);
+    err.status = res.status;
+    throw err;
   }
 
   return res.json();
@@ -44,7 +46,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'api-fetch') {
     fetchFrontend(msg.path)
       .then(data => sendResponse(data))
-      .catch(e => sendResponse({ error: e.message }));
+      .catch(e => sendResponse({ error: e.message, status: e.status }));
     return true; // keep channel open for async
   }
 

@@ -14,8 +14,25 @@
     </div>
     <div id="error" class="error" style="display:none">
       <div class="error-icon">⚠️</div>
-      <p id="error-message">Not logged in to OpenRouter</p>
+      <p id="error-message">Something went wrong</p>
       <button id="retry-btn" class="btn" onclick="loadData()">Retry</button>
+    </div>
+    <div id="login" class="error" style="display:none">
+      <div class="error-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-fingerprint-scan">
+	<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+	<path d="M9 11a3 3 0 0 1 6 0c0 1.657 .612 3.082 1 4" />
+	<path d="M12 11v1.75c-.001 1.11 .661 2.206 1 3.25" />
+	<path d="M9 14.25c.068 .58 .358 1.186 .5 1.75" />
+	<path d="M4 8v-2a2 2 0 0 1 2 -2h2" />
+	<path d="M4 16v2a2 2 0 0 0 2 2h2" />
+	<path d="M16 4h2a2 2 0 0 1 2 2v2" />
+	<path d="M16 20h2a2 2 0 0 0 2 -2v-2" />
+</svg>
+      </div>
+      <p class="login-title">Not logged in to OpenRouter</p>
+      <p class="login-note">Log in to openrouter.ai in this browser, then reopen the extension.</p>
+      <a href="https://openrouter.ai/sign-in" target="_blank" class="btn">Log in to OpenRouter</a>
     </div>
     <div id="content" style="display:none">
       <!-- Header -->
