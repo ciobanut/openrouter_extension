@@ -124,7 +124,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const minutes = msg.minutes || 60;
     const granularity = msg.granularity || 'minute';
     const now = new Date();
-    const start = new Date(Date.now() - minutes * 60000);
+    const start = msg.start ? new Date(msg.start) : new Date(Date.now() - minutes * 60000);
 
     const payload = {
       metrics: ['total_usage', 'request_count'],

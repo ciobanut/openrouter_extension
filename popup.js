@@ -25,6 +25,12 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// Local midnight in browser's timezone
+function startOfToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
 // Send message to background service worker
 function bgFetch(path) {
   return new Promise((resolve, reject) => {
@@ -95,7 +101,7 @@ async function loadData() {
       { id: '15m', minutes: 15, granularity: 'minute', label: '15 min' },
       { id: '1h', minutes: 60, granularity: 'minute', label: '1 hour' },
       { id: '3h', minutes: 180, granularity: 'minute', label: '3 hours' },
-      { id: 'day', minutes: 1440, granularity: 'day', label: 'Today' },
+      { id: 'day', minutes: 1440, granularity: 'day', label: 'Today', startOfDay: true },
       { id: 'week', minutes: 10080, granularity: 'day', label: 'This Week' },
       { id: 'month', minutes: 43200, granularity: 'day', label: 'This Month' }
     ];
@@ -105,7 +111,7 @@ async function loadData() {
       try {
         const resp = await new Promise((resolve, reject) => {
           chrome.runtime.sendMessage(
-            { type: 'get-model-usage', minutes: p.minutes, granularity: p.granularity },
+            { type: 'get-model-usage', minutes: p.minutes, granularity: p.granularity, start: p.startOfDay ? startOfToday() : undefined },
             (resp) => {
               if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
               else if (resp?.error) reject(new Error(resp.error));
