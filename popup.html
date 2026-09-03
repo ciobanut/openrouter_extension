@@ -89,7 +89,7 @@
           <span class="badge" id="model-usage-count">0</span>
         </div>
         <div id="model-chart-wrap" class="chart-wrap" style="display:none">
-          <img id="model-chart" class="chart-img" alt="Usage by model chart">
+          <canvas id="model-chart"></canvas>
         </div>
         <div id="model-usage-list" class="keys-list"></div>
       </div>
@@ -101,6 +101,8 @@
       </div>
     </div>
   </div>
+  <script src="lib/chart.umd.min.js"></script>
+  <script src="lib/chartjs-plugin-datalabels.min.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

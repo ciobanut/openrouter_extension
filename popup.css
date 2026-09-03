@@ -284,11 +284,8 @@ a.btn {
   background: #161618;
 }
 
-.chart-img {
-  width: 100%;
-  height: auto;
+.chart-wrap canvas {
   display: block;
-  border-radius: 6px;
 }
 
 /* Model Usage */

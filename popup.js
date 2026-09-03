@@ -5,6 +5,10 @@ const $ = (sel) => document.querySelector(sel);
 const show = (el) => el.style.display = '';
 const hide = (el) => el.style.display = 'none';
 
+// Chart.js with OpenRouter dark styling (rendered locally, no external requests)
+Chart.register(ChartDataLabels);
+let modelChart = null;
+
 function formatCurrency(val) {
   if (val == null || isNaN(val)) return '$0.00';
   return '$' + Number(val).toFixed(2);
@@ -176,15 +180,18 @@ async function loadData() {
       const maxVal = Math.max(...data, 0.01);
       const chartHeight = Math.max(140, sortedUsage.length * 32 + 60);
 
-      const chartConfig = {
+      if (modelChart) modelChart.destroy();
+      const canvas = $('#model-chart');
+      canvas.width = 296;
+      canvas.height = chartHeight;
+      modelChart = new Chart(canvas, {
         type: 'bar',
         data: {
           labels,
           datasets: [{
             label: 'Cost ($)',
             data,
-            backgroundColor: '#00c49f',
-            borderWidth: 1,
+            backgroundColor: '#c8ff00',
             borderRadius: 4
           }]
         },
@@ -192,40 +199,45 @@ async function loadData() {
           indexAxis: 'y',
           responsive: false,
           maintainAspectRatio: false,
-          legend: { display: false },
-          scales: {
-            xAxes: [{
-              ticks: {
-                beginAtZero: true,
-                max: maxVal * 1.3,
-                fontColor: '#888',
-                fontSize: 9
-              },
-              gridLines: { color: 'rgba(255,255,255,0.06)' }
-            }],
-            yAxes: [{
-              ticks: { fontColor: '#ccc', fontSize: 10 },
-              gridLines: { display: false }
-            }]
-          },
+          animation: true,
+          devicePixelRatio: 2,
+          layout: { padding: { right: 44 } },
           plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1d1d21',
+              borderColor: '#2a2a2e',
+              borderWidth: 1,
+              titleColor: '#e1e1e1',
+              bodyColor: '#888',
+              displayColors: false
+            },
             datalabels: {
               display: true,
               anchor: 'end',
-              align: 'right',
-              backgroundColor: '#40e0d0',
+              align: 'end',
+              clamp: true,
+              backgroundColor: '#c8ff00',
               color: '#0a0a0b',
               borderRadius: 10,
-              font: { size: 11, weight: '700' },
-              formatter: "function(v) { return '$' + Number(v).toFixed(4); }"
+              font: { size: 10, weight: '700' },
+              formatter: (v) => '$' + Number(v).toFixed(4)
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              suggestedMax: maxVal * 1.3,
+              ticks: { color: '#888', font: { size: 9 } },
+              grid: { color: 'rgba(255,255,255,0.06)' }
+            },
+            y: {
+              ticks: { color: '#ccc', font: { size: 10 } },
+              grid: { display: false }
             }
           }
         }
-      };
-
-      const chartUrl = 'https://quickchart.io/chart?w=320&h=' + chartHeight +
-        '&bg=%23161618&c=' + encodeURIComponent(JSON.stringify(chartConfig));
-      $('#model-chart').src = chartUrl;
+      });
       show($('#model-chart-wrap'));
 
       for (const entry of sortedUsage) {
