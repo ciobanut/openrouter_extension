@@ -126,14 +126,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const now = new Date();
     const start = msg.start ? new Date(msg.start) : new Date(Date.now() - minutes * 60000);
 
+    // Mirrors the OpenRouter dashboard requests (captured from openrouter.ai/activity):
+    //  - sub-day ranges (Today) use hour granularity
+    //  - day-granularity queries accept an IANA `timezone` param so buckets are
+    //    aligned and clipped to that timezone instead of UTC
     const payload = {
-      metrics: ['total_usage', 'request_count'],
+      metrics: ['total_usage', 'request_count', 'tokens_prompt', 'tokens_completion', 'tokens_total', 'cache_hit_rate'],
       dimensions: ['model'],
       granularity,
       time_range: { start: start.toISOString(), end: now.toISOString() },
-      order_by: { field: 'date', direction: 'desc' },
-      limit: 200
+      order_by: { field: 'date', direction: 'asc' },
+      limit: 400
     };
+    if (msg.timezone) payload.timezone = msg.timezone;
 
     fetchFrontend('/private/analytics-query', {
       method: 'POST',

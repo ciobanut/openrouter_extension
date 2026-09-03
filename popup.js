@@ -35,6 +35,24 @@ function startOfToday() {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+// Monday 00:00 local (OpenRouter weeks start on Monday)
+function startOfWeek() {
+  const d = startOfToday();
+  const dow = (d.getDay() + 6) % 7; // Mon=0..Sun=6
+  d.setDate(d.getDate() - dow);
+  return d;
+}
+
+// 1st of current month, 00:00 local
+function startOfMonth() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+// IANA timezone of the browser (the OpenRouter dashboard defaults to this too:
+// localStorage["activity-display-timezone"] = "local")
+const BROWSER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 // Send message to background service worker
 function bgFetch(path) {
   return new Promise((resolve, reject) => {
@@ -100,14 +118,15 @@ async function loadData() {
       $('#balance').textContent = 'N/A';
     }
 
-    // Fetch model usage for all periods
+    // Fetch model usage for all periods. Calendar periods mirror the dashboard:
+    // Today uses hour granularity, week/month use day granularity + timezone param.
     const periods = [
       { id: '15m', minutes: 15, granularity: 'minute', label: '15 min' },
       { id: '1h', minutes: 60, granularity: 'minute', label: '1 hour' },
       { id: '3h', minutes: 180, granularity: 'minute', label: '3 hours' },
-      { id: 'day', minutes: 1440, granularity: 'day', label: 'Today', startOfDay: true },
-      { id: 'week', minutes: 10080, granularity: 'day', label: 'This Week' },
-      { id: 'month', minutes: 43200, granularity: 'day', label: 'This Month' }
+      { id: 'day', granularity: 'hour', label: 'Today', getStart: startOfToday },
+      { id: 'week', granularity: 'day', tz: true, label: 'This Week', getStart: startOfWeek },
+      { id: 'month', granularity: 'day', tz: true, label: 'This Month', getStart: startOfMonth }
     ];
     const periodData = {};
 
@@ -115,7 +134,7 @@ async function loadData() {
       try {
         const resp = await new Promise((resolve, reject) => {
           chrome.runtime.sendMessage(
-            { type: 'get-model-usage', minutes: p.minutes, granularity: p.granularity, start: p.startOfDay ? startOfToday() : undefined },
+            { type: 'get-model-usage', minutes: p.minutes, granularity: p.granularity, start: p.getStart ? p.getStart().toISOString() : undefined, timezone: p.tz ? BROWSER_TZ : undefined },
             (resp) => {
               if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
               else if (resp?.error) reject(new Error(resp.error));
