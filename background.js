@@ -71,18 +71,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     fetch('https://openrouter.ai/settings/credits', { credentials: 'include' })
       .then(res => res.text())
       .then(html => {
-        // Extract balance from aria-label: "Total available credits: $X.XX"
-        const match = html.match(/Total available credits:?\s*\$([\d,.]+)/);
+        // Extract balance
+        const match = html.match(/displayBalance["\\]*:\s*(-?[\d.]+)/);
         if (match) {
-          sendResponse({ balance: parseFloat(match[1].replace(/,/g, '')) });
+          sendResponse({ balance: parseFloat(match[1]) });
         } else {
-          // Fallback: look for the balance in the page text
-          const match2 = html.match(/aria-label="Total available credits:?\s*\$([\d,.]+)"/);
-          if (match2) {
-            sendResponse({ balance: parseFloat(match2[1].replace(/,/g, '')) });
-          } else {
-            sendResponse({ balance: null });
-          }
+          sendResponse({ balance: null });
         }
       })
       .catch(e => sendResponse({ error: e.message }));
