@@ -3,14 +3,6 @@
 
 const FRONTEND_API = 'https://openrouter.ai/api/frontend/v1';
 
-const ALLOWED_GET_PATHS = new Set([
-  '/private/users/current'
-]);
-
-const ALLOWED_POST_PATHS = new Set([
-  '/private/analytics-query'
-]);
-
 async function fetchFrontend(path, opts = {}) {
   const url = `${FRONTEND_API}${path}`;
   const method = opts.method || 'GET';
@@ -20,7 +12,6 @@ async function fetchFrontend(path, opts = {}) {
     'Accept': 'application/json'
   };
 
-  // Only add Content-Type for requests with a body
   if (isPost && opts.body) {
     headers['Content-Type'] = 'application/json';
   }
@@ -51,28 +42,10 @@ async function fetchFrontend(path, opts = {}) {
 
 // Handle messages from popup
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === 'api-fetch') {
-    if (!ALLOWED_GET_PATHS.has(msg.path)) {
-      sendResponse({ error: 'Disallowed path' });
-      return false;
-    }
-    fetchFrontend(msg.path)
+  if (msg.type === 'get-user') {
+    fetchFrontend('/private/users/current')
       .then(data => sendResponse(data))
       .catch(e => sendResponse({ error: e.message, status: e.status }));
-    return true; // keep channel open for async
-  }
-
-  if (msg.type === 'api-post') {
-    if (!ALLOWED_POST_PATHS.has(msg.path)) {
-      sendResponse({ error: 'Disallowed path' });
-      return false;
-    }
-    fetchFrontend(msg.path, {
-      method: 'POST',
-      body: JSON.stringify(msg.body)
-    })
-      .then(data => sendResponse(data?.data ?? data))
-      .catch(e => sendResponse({ error: e.message }));
     return true;
   }
 
@@ -136,10 +109,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const now = new Date();
     const start = msg.start ? new Date(msg.start) : new Date(Date.now() - minutes * 60000);
 
-    // Mirrors the OpenRouter dashboard requests (captured from openrouter.ai/activity):
-    //  - sub-day ranges (Today) use hour granularity
-    //  - day-granularity queries accept an IANA `timezone` param so buckets are
-    //    aligned and clipped to that timezone instead of UTC
     const payload = {
       metrics: ['total_usage', 'request_count', 'tokens_prompt', 'tokens_completion', 'tokens_total', 'cache_hit_rate'],
       dimensions: ['model'],

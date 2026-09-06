@@ -54,9 +54,9 @@ function startOfMonth() {
 const BROWSER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 // Send message to background service worker
-function bgFetch(path) {
+function bgMessage(msg) {
   return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage({ type: 'api-fetch', path }, (response) => {
+    chrome.runtime.sendMessage(msg, (response) => {
       if (chrome.runtime.lastError) {
         reject(new Error(chrome.runtime.lastError.message));
       } else if (response?.error) {
@@ -86,7 +86,7 @@ async function loadData() {
 
   try {
     // Fetch user info
-    const userResp = await bgFetch('/private/users/current');
+    const userResp = await bgMessage({ type: 'get-user' });
     const userInfo = userResp.data || userResp;
 
     hide($('#loading'));
