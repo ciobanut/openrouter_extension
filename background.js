@@ -3,6 +3,14 @@
 
 const FRONTEND_API = 'https://openrouter.ai/api/frontend/v1';
 
+const ALLOWED_GET_PATHS = new Set([
+  '/private/users/current'
+]);
+
+const ALLOWED_POST_PATHS = new Set([
+  '/private/analytics-query'
+]);
+
 async function fetchFrontend(path, opts = {}) {
   const url = `${FRONTEND_API}${path}`;
   const method = opts.method || 'GET';
@@ -44,6 +52,10 @@ async function fetchFrontend(path, opts = {}) {
 // Handle messages from popup
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'api-fetch') {
+    if (!ALLOWED_GET_PATHS.has(msg.path)) {
+      sendResponse({ error: 'Disallowed path' });
+      return false;
+    }
     fetchFrontend(msg.path)
       .then(data => sendResponse(data))
       .catch(e => sendResponse({ error: e.message, status: e.status }));
@@ -51,6 +63,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.type === 'api-post') {
+    if (!ALLOWED_POST_PATHS.has(msg.path)) {
+      sendResponse({ error: 'Disallowed path' });
+      return false;
+    }
     fetchFrontend(msg.path, {
       method: 'POST',
       body: JSON.stringify(msg.body)
