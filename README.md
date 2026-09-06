@@ -1,29 +1,28 @@
 # OpenRouter Account Status
 
-A Chrome extension that displays your OpenRouter account status directly in a popup — **no API key required**. Just click the icon and see your balance, usage, and API keys at a glance.
+A Chrome extension that displays your OpenRouter account status directly in a popup — **no API key required**. Just click the icon and see your balance, usage, and model costs at a glance.
 
-![Extension Screenshot](screenshot.png)
+![Extension Screenshot](screenshot.avif)
 
 ## Features
 
 - **Account Balance** — See your current credit balance in real-time
-- **Usage Tracking** — View your spending for today, this week, and this month
-- **API Keys Overview** — All your API keys sorted by total usage, with the top spenders highlighted
-- **Workspace Info** — See which workspace you're connected to
-- **Quick Links** — Jump directly to OpenRouter's credits page or key management
+- **Multi-Period Usage Tracking** — View spending for 15 min, 1 hour, 3 hours, today, this week, and this month
+- **Usage by Model** — Interactive bar chart showing per-model costs, powered by Chart.js
+- **Quick Login** — Detects if you're not signed in and provides a direct link to log in
+- **Quick Links** — Jump directly to OpenRouter's activity page or key management
 
 ## How It Works
 
-The extension retrieves account information directly from [openrouter.ai](https://openrouter.ai) using your existing signed-in browser session — **no API key or token needed**. Account information is transmitted only between the extension and OpenRouter; nothing is sent to any server operated by the extension author.
+The extension retrieves account information directly from <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer">openrouter.ai</a> using your existing signed-in browser session — **no API key or token needed**. Account information is transmitted only between the extension and OpenRouter; nothing is sent to any server operated by the extension author.
 
 ### Data Sources
 
 | Data | Source |
 |------|--------|
 | User info (name, email, avatar) | `/api/frontend/v1/private/users/current` |
-| Workspaces | `/api/frontend/v1/private/user/workspaces` |
-| API keys & usage | `/api/frontend/v1/private/workspace-api-keys` |
 | Account balance | Scraped from `/settings/credits` page |
+| Usage by model & period | `/api/frontend/v1/private/analytics-query` (POST) |
 
 ## Installation
 
@@ -38,7 +37,7 @@ The extension retrieves account information directly from [openrouter.ai](https:
 
 ### Usage
 
-1. Log in to [openrouter.ai](https://openrouter.ai) in Chrome
+1. Log in to <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer">openrouter.ai</a> in Chrome
 2. Click the OpenRouter extension icon in the toolbar
 3. Your account status loads automatically
 
@@ -58,20 +57,24 @@ The extension does not extract, store, or transmit authentication cookies to any
 - Vanilla JavaScript (no frameworks)
 - CSS custom properties for theming
 - Background service worker for API calls
+- <a href="https://www.chartjs.org/" target="_blank" rel="noopener noreferrer">Chart.js</a> with DataLabels plugin (bundled locally)
 
 ## Project Structure
 
 ```
 openrouter_extension/
-├── manifest.json        # Extension manifest (MV3)
-├── background.js        # Service worker — handles all API calls
-├── popup.html           # Popup UI
-├── popup.css            # Dark theme styling
-├── popup.js             # Popup logic & data fetching
+├── manifest.json                              # Extension manifest (MV3)
+├── background.js                              # Service worker — handles all API calls
+├── popup.html                                 # Popup UI
+├── popup.css                                  # Dark theme styling
+├── popup.js                                   # Popup logic & data fetching
+├── lib/
+│   ├── chart.umd.min.js                      # Chart.js (local)
+│   └── chartjs-plugin-datalabels.min.js       # DataLabels plugin (local)
 └── icons/
-    ├── icon16.png       # Toolbar icon (16x16)
-    ├── icon48.png       # Extensions page icon (48x48)
-    └── icon128.png      # Store icon (128x128)
+    ├── icon16.png                             # Toolbar icon (16x16)
+    ├── icon48.png                             # Extensions page icon (48x48)
+    └── icon128.png                            # Store icon (128x128)
 ```
 
 ## Privacy
@@ -82,6 +85,7 @@ openrouter_extension/
 - ✅ Uses your existing browser session (no additional login required)
 - ✅ Account information is used only to display the account status in the extension popup
 - ✅ Open source — inspect the code yourself
+- ✅ <a href="https://ciobanut.com/works/openrouter-extension/privacy-policy/" target="_blank" rel="noopener noreferrer">Full Privacy Policy</a>
 
 ## License
 
