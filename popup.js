@@ -14,15 +14,6 @@ function formatCurrency(val) {
   return '$' + Number(val).toFixed(2);
 }
 
-function formatCurrencyShort(val) {
-  if (val == null || isNaN(val)) return '$0';
-  const n = Number(val);
-  if (n >= 1000) return '$' + (n / 1000).toFixed(1) + 'k';
-  if (n >= 1) return '$' + n.toFixed(2);
-  if (n > 0) return '$' + n.toFixed(3);
-  return '$0';
-}
-
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
