@@ -40,12 +40,43 @@ async function fetchFrontend(path, opts = {}) {
   return res.json();
 }
 
+// If the extension's session looks stale but the user might actually still be
+// signed in on openrouter.ai, open a hidden background tab so the site's own
+// client-side auth refresh can run and renew the session cookie.
+function silentReauth() {
+  return new Promise((resolve) => {
+    chrome.tabs.create({ url: 'https://openrouter.ai/', active: false }, (tab) => {
+      setTimeout(() => {
+        if (tab?.id != null) {
+          chrome.tabs.remove(tab.id, () => resolve());
+        } else {
+          resolve();
+        }
+      }, 4000);
+    });
+  });
+}
+
+function isAuthError(err) {
+  return err?.status === 401 || err?.status === 403;
+}
+
 // Handle messages from popup
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'get-user') {
     fetchFrontend('/private/users/current')
       .then(data => sendResponse(data))
-      .catch(e => sendResponse({ error: e.message, status: e.status }));
+      .catch(async (e) => {
+        if (!isAuthError(e)) {
+          sendResponse({ error: e.message, status: e.status });
+          return;
+        }
+        // Session looked expired - try a silent refresh before giving up.
+        await silentReauth();
+        fetchFrontend('/private/users/current')
+          .then(data => sendResponse(data))
+          .catch(e2 => sendResponse({ error: e2.message, status: e2.status }));
+      });
     return true;
   }
 
